@@ -288,3 +288,5 @@ function move() {
 }
 
 let interval = setInterval(move, 400);
+
+// error with boundries still to be fixed 
