@@ -250,4 +250,4 @@ drawSnake();
 
 
 
-SyntaxError: Identifier 'map' has already been declared
+SyntaxError: Identifier 'map' has already been declared;
