@@ -7,7 +7,7 @@ const apple = "a"; // Changed object to apple
 const body = "b";
 
 setLegend(
-  [ logo1, bitmap`
+  [logo1, bitmap`
 99..9..9..99.9.9
 9.9.9..9.9...99.
 99...99...99.9.9
@@ -24,7 +24,7 @@ setLegend(
 ................
 ................
 ................`],
-  [ logo2, bitmap`
+  [logo2, bitmap`
 ................
 ................
 ................
@@ -41,7 +41,7 @@ setLegend(
 ................
 ................
 ................`],
-  [ player, bitmap`
+  [player, bitmap`
 DDDDDDDDDDDDDDDD
 DDDDDDDDDDDDDDDD
 DDDDDDDDDDDDDDDD
@@ -56,7 +56,7 @@ DDDDDDDDDDDDDDDD
 DDDDDDDDDDDDDDDD
 DDDDDDDDDDDDDDDD
 DDDDDDDDDDDDDDDD`], // Rectangular player bitmap
-  [ wall, bitmap`
+  [wall, bitmap`
 0000000000000000
 0000000000000000
 0000000000000000
@@ -73,13 +73,13 @@ DDDDDDDDDDDDDDDD`], // Rectangular player bitmap
 0000000000000000
 0000000000000000
 0000000000000000`],
-  [ gamebg, bitmap`
+  [gamebg, bitmap`
 0000000000000000
 0000000000000000
 0000000000000000
 0000000000000000
 0000000000000000`], // Changed game background color
-  [ apple, bitmap`
+  [apple, bitmap`
 ................
 ...CCC..........
 ..CCCCC.........
@@ -98,7 +98,7 @@ DDDDDDDDDDDDDDDD`], // Rectangular player bitmap
 ................
 ................
 ................`],
-  [ body, bitmap`
+  [body, bitmap`
 DDDDDDDDDDDDDDDD
 DDDDDDDDDDDDDDDD
 DDDDDDDDDDDDDDDD
@@ -144,207 +144,110 @@ const music = tune`
 1764.7058823529412: a4~1764.7058823529412 + c5/1764.7058823529412 + f4/1764.7058823529412 + d4/1764.7058823529412,
 1764.7058823529412: b4~1764.7058823529412 + d5/1764.7058823529412 + g4/1764.7058823529412 + e4/1764.7058823529412 + c4/1764.7058823529412,
 1764.7058823529412: c5~1764.7058823529412 + e5/1764.7058823529412 + a4/1764.7058823529412 + f4/1764.7058823529412 + d4/1764.7058823529412,
-1764.7058823529412: d5~1764.7058823529412 + f5/1764.7058823529412 + c4/1764.7058823529412 + e4/1764.7058823529412 + g4/1764.7058823529412,
-1764.7058823529412: e5~1764.7058823529412 + g5/1764.7058823529412 + d4/1764.7058823529412 + f4/1764.7058823529412,
-1764.7058823529412: f5~1764.7058823529412 + a5/1764.7058823529412 + e4/1764.7058823529412 + g4/1764.7058823529412,
-1764.7058823529412: g5~1764.7058823529412 + b5/1764.7058823529412 + f4/1764.7058823529412 + a4/1764.7058823529412,
-1764.7058823529412`;
+1764.7058823529412: d5~1764.7058823529412 + f5/1764.7058823529412 + c4/1764.7058823529412 + e4/1764.7058823529412 + g4/1764.7058823529412`;
 
-let playback = playTune(music, Infinity);
+const map = `
+wwwwwwwwwwwwwwww
+w..............w
+w..............w
+w..............w
+w..............w
+w..............w
+w..............w
+w..............w
+w..............w
+w..............w
+w..............w
+w..............w
+w..............w
+wwwwwwwwwwwwwwww`;
 
-let direction = "e";
-let directionToSet = "e";
-let score = 0;
+setMap(map);
 
-setMap(map`
-..........
-..........
-..........
-..........
-..........
-..........
-..........
-..........`);
 setBackground(gamebg);
 
-setSolids([ player, wall, body ]);
+let snake = [{ x: 2, y: 2 }];
+let applePosition = { x: 5, y: 5 };
+let direction = { x: 1, y: 0 };
+let gameInterval;
+let speed = 150;
 
-let snake = [
-  [0, 0]
-];
-
-function placeFood() {
-  let position = [Math.floor(Math.random() * 9) + 1, Math.floor(Math.random() * 7) + 1];
-  addSprite(position[0], position[1], apple);
-}
-
-function addScore() {
-  clearText();
-  addText("SCORE: " + score, { x: 1, y: 1, color: color`red` }); // Changed score counter color to red
-}
-
-function gameOver() {
-  for (let x = 0; x <= 9; x++) {
-    for (let y = 0; y <= 7; y++) {
-      addSprite(x, y, gamebg);
+const placeApple = () => {
+  let validPosition = false;
+  while (!validPosition) {
+    applePosition.x = Math.floor(Math.random() * 14) + 1;
+    applePosition.y = Math.floor(Math.random() * 14) + 1;
+    validPosition = true;
+    for (let segment of snake) {
+      if (segment.x === applePosition.x && segment.y === applePosition.y) {
+        validPosition = false;
+        break;
+      }
     }
   }
-  clearText();
-  addText("GAME OVER!", { x: 5, y: 4, color: color`red` }); // Changed game over text color to red
-  addText("Final Score: " + score, { x: 1, y: 6 });
-  addText("Try again? Press i.", { x: 1, y: 13 });
-  clearInterval(interval);
-  if (playback) playback.end();
-}
+  addSprite(applePosition.x, applePosition.y, apple);
+};
 
-addScore();
-
-onInput("s", () => {
-  if (direction !== "n") {
-    directionToSet = "s";
-  }
-});
-
-onInput("d", () => {
-  if (direction !== "w") {
-    directionToSet = "e";
-  }
-});
-
-onInput("a", () => {
-  if (direction !== "e") {
-    directionToSet = "w";
-  }
-});
-
-onInput("w", () => {
-  if (direction !== "s") {
-    directionToSet = "n";
-  }
-});
-
-onInput("i", () => {
-  clearText();
-  getAll().forEach(tile => {
-    clearTile(tile.x, tile.y);
-  });
-  score = 0;
-  direction = "e";
-  directionToSet = "e";
-  snake = [
-    [0, 0]
-  ];
-  placeFood();
-  clearInterval(interval);
-  interval = setInterval(move, 400);
-  addScore();
-
-  if (playback) playback.end();
-  playback = playTune(music, Infinity);
-});
-
-placeFood();
-
-function move() {
-  direction = directionToSet;
-
-  if (tilesWith(apple) === 0) {
-    placeFood();
-  }
-
-  switch (direction) {
-    case "n":
-      snake.push([snake[snake.length - 1][0], snake[snake.length - 1][1] - 1]);
-      break;
-    case "s":
-      snake.push([snake[snake.length - 1][0], snake[snake.length - 1][1] + 1]);
-      break;
-    case "e":
-      snake.push([snake[snake.length - 1][0] + 1, snake[snake.length - 1][1]]);
-      break;
-    case "w":
-      snake.push([snake[snake.length - 1][0] - 1, snake[snake.length - 1][1]]);
-      break;
-  }
-
-  if (tilesWith(player, apple).length !== 0 || tilesWith(body, apple).length !== 0) {
-    placeFood();
-    score++;
-    addScore();
-  } else {
-    let tail = snake.shift();
-    addSprite(tail[0], tail[1], gamebg);
-  }
-
-  snake.forEach(segment => {
-    addSprite(segment[0], segment[1], body);
-  });
-
-  if (tilesWith(player, wall).length !== 0 || tilesWith(player, body).length !== 0) {
-    gameOver();
-  }
-
-  addSprite(snake[snake.length - 1][0], snake[snake.length - 1][1], player);
-}
-
-let interval = setInterval(move, 400);
-
-// error with boundries still to be fixed 
-
-
-function move() {
-  direction = directionToSet;
-
-  if (tilesWith(apple) === 0) {
-    placeFood();
-  }
-
-  let newX, newY;
-  switch (direction) {
-    case "n":
-      newX = snake[snake.length - 1][0];
-      newY = snake[snake.length - 1][1] - 1;
-      break;
-    case "s":
-      newX = snake[snake.length - 1][0];
-      newY = snake[snake.length - 1][1] + 1;
-      break;
-    case "e":
-      newX = snake[snake.length - 1][0] + 1;
-      newY = snake[snake.length - 1][1];
-      break;
-    case "w":
-      newX = snake[snake.length - 1][0] - 1;
-      newY = snake[snake.length - 1][1];
-      break;
-  }
-
-  // Boundary checking
-  if (newX < 0 || newX > 9 || newY < 0 || newY > 7) {
-    gameOver();
+const moveSnake = () => {
+  const newHead = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+  
+  // Check for wall collision
+  if (newHead.x === 0 || newHead.x === 15 || newHead.y === 0 || newHead.y === 15) {
+    endGame();
     return;
   }
-
-  snake.push([newX, newY]);
-
-  if (tilesWith(player, apple).length !== 0 || tilesWith(body, apple).length !== 0) {
-    placeFood();
-    score++;
-    addScore();
+  
+  // Check for self-collision
+  for (let segment of snake) {
+    if (newHead.x === segment.x && newHead.y === segment.y) {
+      endGame();
+      return;
+    }
+  }
+  
+  // Check for apple collision
+  if (newHead.x === applePosition.x && newHead.y === applePosition.y) {
+    snake.push(newHead);
+    placeApple();
   } else {
-    let tail = snake.shift();
-    addSprite(tail[0], tail[1], gamebg);
+    snake.pop();
+    snake.unshift(newHead);
   }
 
-  snake.forEach(segment => {
-    addSprite(segment[0], segment[1], body);
-  });
+  clearSnake();
+  drawSnake();
+};
 
-  if (tilesWith(player, wall).length !== 0 || tilesWith(player, body).length !== 0) {
-    gameOver();
+const drawSnake = () => {
+  for (let segment of snake) {
+    addSprite(segment.x, segment.y, player);
   }
+};
 
-  addSprite(snake[snake.length - 1][0], snake[snake.length - 1][1], player);
-}
-let interval = setInterval(move, 400);
+const clearSnake = () => {
+  for (let y = 1; y < 15; y++) {
+    for (let x = 1; x < 15; x++) {
+      clearTile(x, y);
+    }
+  }
+};
 
+const endGame = () => {
+  clearInterval(gameInterval);
+  addText("Game Over", { y: 7, color: color`3` });
+  playTune(music);
+};
+
+onInput("w", () => { if (direction.y === 0) direction = { x: 0, y: -1 }; });
+onInput("s", () => { if (direction.y === 0) direction = { x: 0, y: 1 }; });
+onInput("a", () => { if (direction.x === 0) direction = { x: -1, y: 0 }; });
+onInput("d", () => { if (direction.x === 0) direction = { x: 1, y: 0 }; });
+
+gameInterval = setInterval(moveSnake, speed);
+
+placeApple();
+drawSnake();
+
+
+
+SyntaxError: Identifier 'map' has already been declared
