@@ -250,4 +250,6 @@ drawSnake();
 
 
 
-SyntaxError: Identifier 'map' has already been declared;
+SyntaxError: Identifier 'map' has already been declared; 
+
+issue is still prominante putting issue into any ai fix seems to fail
