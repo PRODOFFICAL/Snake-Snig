@@ -290,3 +290,59 @@ function move() {
 let interval = setInterval(move, 400);
 
 // error with boundries still to be fixed 
+
+
+function move() {
+  direction = directionToSet;
+
+  if (tilesWith(apple) === 0) {
+    placeFood();
+  }
+
+  let newX, newY;
+  switch (direction) {
+    case "n":
+      newX = snake[snake.length - 1][0];
+      newY = snake[snake.length - 1][1] - 1;
+      break;
+    case "s":
+      newX = snake[snake.length - 1][0];
+      newY = snake[snake.length - 1][1] + 1;
+      break;
+    case "e":
+      newX = snake[snake.length - 1][0] + 1;
+      newY = snake[snake.length - 1][1];
+      break;
+    case "w":
+      newX = snake[snake.length - 1][0] - 1;
+      newY = snake[snake.length - 1][1];
+      break;
+  }
+
+  // Boundary checking
+  if (newX < 0 || newX > 9 || newY < 0 || newY > 7) {
+    gameOver();
+    return;
+  }
+
+  snake.push([newX, newY]);
+
+  if (tilesWith(player, apple).length !== 0 || tilesWith(body, apple).length !== 0) {
+    placeFood();
+    score++;
+    addScore();
+  } else {
+    let tail = snake.shift();
+    addSprite(tail[0], tail[1], gamebg);
+  }
+
+  snake.forEach(segment => {
+    addSprite(segment[0], segment[1], body);
+  });
+
+  if (tilesWith(player, wall).length !== 0 || tilesWith(player, body).length !== 0) {
+    gameOver();
+  }
+
+  addSprite(snake[snake.length - 1][0], snake[snake.length - 1][1], player);
+}
